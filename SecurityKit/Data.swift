@@ -5,7 +5,6 @@ public extension Data {
     /// Generates cryptographically secure random bytes.
     ///
     /// - Parameter count: The number of random bytes to return.
-    /// - Throws: ``SecError`` wrapping the `OSStatus` return code.
     init(randomBytes count: Int) throws {
         let buffer = UnsafeMutableRawPointer.allocate(byteCount: count, alignment: MemoryLayout<UInt8>.alignment)
         buffer.initializeMemory(as: UInt8.self, repeating: 0x00, count: count)

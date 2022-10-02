@@ -1,22 +1,13 @@
 import XCTest
-
 @testable import SecurityKit
 
-final class SecKeyTests: XCTestCase {
-    func testCFBridging() {
-        let dict = [
-            kSecAttrKeyType: SecAttrKeyType.RSA,
-            kSecAttrKeyClass: SecAttrKeyClass.publicKey,
-        ] as CFDictionary
-        XCTAssertNotNil(dict as? [String: String])
-        XCTAssertEqual(dict, [
-            kSecAttrKeyType: kSecAttrKeyTypeRSA,
-            kSecAttrKeyClass: kSecAttrKeyClassPublic,
-        ] as CFDictionary)
+final class SecRSAKeyTests: XCTestCase {
+    func testRandomKey() throws {
+        XCTAssertNoThrow(try SecRSAKey(size: .bits1024))
     }
 
     func testKeyImport() throws {
-        XCTAssertNoThrow(try SecKey.import(.RSA, .publicKey, Data(
+        XCTAssertNoThrow(try SecRSAKey(Data(
             base64Encoded:
             """
             MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCK8VCMlISQdrpU+TtnzzNbfcNE
@@ -27,7 +18,7 @@ final class SecKeyTests: XCTestCase {
             options: .ignoreUnknownCharacters
         )!))
 
-        XCTAssertNoThrow(try SecKey.import(.RSA, .privateKey, Data(
+        XCTAssertNoThrow(try SecRSAKey(Data(
             base64Encoded:
             """
             MIIEogIBAAKCAQEA8+P+WrzmCMdRjUdK1yvYiHjl0sRKRXWzRCnmkbwyHQywOKGL
@@ -61,7 +52,7 @@ final class SecKeyTests: XCTestCase {
     }
 
     func testKeyAttributes() throws {
-        let key = try SecKey.import(.RSA, .privateKey, Data(
+        let key = try SecRSAKey(Data(
             base64Encoded:
             """
             MIICWwIBAAKBgQCn33EwfzV6y08ZagXt9n4swfo9gWzOY0BvcVYwChJwkkkgQou3
@@ -81,14 +72,11 @@ final class SecKeyTests: XCTestCase {
             options: .ignoreUnknownCharacters
         )!)
 
-        XCTAssertEqual(key.keyType, SecAttrKeyType.RSA)
-        XCTAssertEqual(key.keyClass, SecAttrKeyClass.privateKey)
-        XCTAssertEqual(key.keySize, 1024 / 8)
-        XCTAssertEqual(key.blockSize, 128)
+        XCTAssertEqual(key.keySize, 1024)
     }
 
     func testEncryption() throws {
-        let key = try SecKey.import(.RSA, .privateKey, Data(
+        let key = try SecRSAKey(Data(
             base64Encoded:
             """
             MIICWwIBAAKBgGZEQql8pSLobUt8YM6eDaSbkshxb46PqpYbltYEkXgWb1HDj+BZ
@@ -108,14 +96,14 @@ final class SecKeyTests: XCTestCase {
             options: .ignoreUnknownCharacters
         )!)
 
-        let random = try Data(randomBytes: SecKeyGetBlockSize(key) - 11)
-        let encrypted = try key.encrypt(random, algorithm: .rsaEncryptionPKCS1)
-        let decrypted = try key.decrypt(encrypted, algorithm: .rsaEncryptionPKCS1)
+        let random = try Data(randomBytes: key.blockSize - 11)
+        let encrypted = try key.encrypt(block: random, algorithm: .PKCS1)
+        let decrypted = try key.decrypt(block: encrypted, algorithm: .PKCS1)
         XCTAssertEqual(random, decrypted)
     }
 
     func testSignature() throws {
-        let key = try SecKey.import(.RSA, .privateKey, Data(
+        let key = try SecRSAKey(Data(
             base64Encoded:
             """
             MIIJKQIBAAKCAgEAnkZCO6lbrqfk60GdhBRlR4Xxhc45Qw3J4Hlb+CyKoDTHQeSg
@@ -172,9 +160,8 @@ final class SecKeyTests: XCTestCase {
         )!)
 
         let random = try Data(randomBytes: 4 * 1024 * 1024)
-        let signature = try key.sign(random, algorithm: .rsaSignatureMessagePSSSHA256)
-        XCTAssertNoThrow(try key.verify(message: random, signature: signature,
-                                        algorithm: .rsaSignatureMessagePSSSHA256))
+        let signature = try key.sign(random, algorithm: .message(.PSS(.SHA256)))
+        XCTAssertNoThrow(try key.verify(message: random, signature: signature, algorithm: .message(.PSS(.SHA256))))
     }
 
     func testKeyExport() throws {
@@ -197,7 +184,7 @@ final class SecKeyTests: XCTestCase {
             """,
             options: .ignoreUnknownCharacters
         )!
-        let privateKey = try SecKey.import(.RSA, .privateKey, privateKeyData)
+        let privateKey = try SecRSAKey(privateKeyData)
         XCTAssertEqual(try privateKey.export(), privateKeyData)
 
         let publicKeyData = Data(
@@ -210,7 +197,7 @@ final class SecKeyTests: XCTestCase {
             """,
             options: .ignoreUnknownCharacters
         )!
-        let publicKey = try SecKey.import(.RSA, .publicKey, publicKeyData)
-        XCTAssertEqual(try privateKey.publicKey!.export(), try publicKey.export())
+        let publicKey = try SecRSAKey(publicKeyData)
+        XCTAssertEqual(try privateKey.publicKey.export(), try publicKey.export())
     }
 }
