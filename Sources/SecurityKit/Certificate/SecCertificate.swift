@@ -1,3 +1,4 @@
+import Foundation
 import Security
 
 /// Creates a certificate object from a DER representation of a certificate.

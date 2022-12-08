@@ -16,7 +16,7 @@ final class P12Tests: XCTestCase {
             password: "dingyi691502"
         )
         for trust in bundle.trusts {
-            try await trust.evaluate(.requireRevPerCert)
+            try await trust.evaluate()
         }
     }
 }
