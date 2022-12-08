@@ -13,7 +13,7 @@ public func SecKeyCreateWithData<T: ContiguousBytes>(_ data: T, properties: [CFS
         let data = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, $0.baseAddress!, $0.count, kCFAllocatorNull)!
         return SecKeyCreateWithData(data, properties as CFDictionary, &error)
     }
-    if let error = error?.takeUnretainedValue() {
+    if let error = error?.takeRetainedValue() {
         throw error
     }
     return key!
@@ -26,7 +26,7 @@ public func SecKeyCreateWithData<T: ContiguousBytes>(_ data: T, properties: [CFS
 public func SecKeyCreateRandomPrivateKey(_ properties: [CFString: Any]) throws -> SecKey {
     var error: Unmanaged<CFError>?
     let key = SecKeyCreateRandomKey(properties as CFDictionary, &error)
-    if let error = error?.takeUnretainedValue() {
+    if let error = error?.takeRetainedValue() {
         throw error
     }
     return key!
@@ -66,7 +66,7 @@ public extension SecKey {
             let data = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, $0.baseAddress!, $0.count, kCFAllocatorNull)!
             return SecKeyCreateEncryptedData(self, algorithm, data, &error)
         }
-        if let error = error?.takeUnretainedValue() {
+        if let error = error?.takeRetainedValue() {
             throw error
         }
         return encrypted! as Data
@@ -89,7 +89,7 @@ public extension SecKey {
             let data = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, $0.baseAddress!, $0.count, kCFAllocatorNull)!
             return SecKeyCreateDecryptedData(self, algorithm, data, &error)
         }
-        if let error = error?.takeUnretainedValue() {
+        if let error = error?.takeRetainedValue() {
             throw error
         }
         return decrypted! as Data
@@ -113,7 +113,7 @@ public extension SecKey {
             let data = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, $0.baseAddress!, $0.count, kCFAllocatorNull)!
             return SecKeyCreateSignature(self, algorithm, data, &error)
         }
-        if let error = error?.takeUnretainedValue() {
+        if let error = error?.takeRetainedValue() {
             throw error
         }
         return signature! as Data
@@ -142,7 +142,7 @@ public extension SecKey {
                 return SecKeyVerifySignature(self, algorithm, messageData, signatureData, &error)
             }
         }
-        if let error = error?.takeUnretainedValue() {
+        if let error = error?.takeRetainedValue() {
             throw error
         }
         guard isValid else {
@@ -166,7 +166,7 @@ public extension SecKey {
 
         var error: Unmanaged<CFError>?
         let data = SecKeyCopyKeyExchangeResult(self, algorithm, publicKey, parameters as CFDictionary, &error)
-        if let error = error?.takeUnretainedValue() {
+        if let error = error?.takeRetainedValue() {
             throw error
         }
 
@@ -181,7 +181,7 @@ public extension SecKey {
     func export() throws -> Data {
         var error: Unmanaged<CFError>?
         let data = SecKeyCopyExternalRepresentation(self, &error)
-        if let error = error?.takeUnretainedValue() {
+        if let error = error?.takeRetainedValue() {
             throw error
         }
         return data! as Data

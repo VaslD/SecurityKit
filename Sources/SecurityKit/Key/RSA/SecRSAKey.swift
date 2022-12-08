@@ -1,27 +1,27 @@
 import Foundation
 import Security
 
-public final class SecRSAKey {
-    public let isPrivateKey: Bool
+public final class SecRSAKey: SecSpecializedKey {
+    public let isPrivate: Bool
 
     public let rawKey: SecKey
 
-    public init?(_ key: SecKey) {
+    public init(_ key: SecKey) throws {
         guard let attributes = SecKeyCopyAttributes(key) as? [CFString: Any] else {
-            return nil
+            throw SecError(errSecMissingAttributeKeyType)
         }
         let type = attributes[kSecAttrKeyType] as AnyObject
         guard CFGetTypeID(type) == CFStringGetTypeID(),
               (type as! CFString) == kSecAttrKeyTypeRSA else {
-            return nil
+            throw SecError(errSecInvalidAttributeKeyType)
         }
 
         let keyClass = attributes[kSecAttrKeyClass] as AnyObject
         guard CFGetTypeID(keyClass) == CFStringGetTypeID() else {
-            return nil
+            throw SecError(errSecInvalidAttributeKey)
         }
 
-        self.isPrivateKey = (keyClass as! CFString) == kSecAttrKeyClassPrivate
+        self.isPrivate = (keyClass as! CFString) == kSecAttrKeyClassPrivate
         self.rawKey = key
     }
 
@@ -35,11 +35,11 @@ public final class SecRSAKey {
             kSecAttrKeyClass: kSecAttrKeyClassPrivate,
             kSecAttrKeySizeInBits: size.rawValue,
         ] as CFDictionary, &error)
-        if let error = error?.takeUnretainedValue() {
+        if let error = error?.takeRetainedValue() {
             throw error
         }
 
-        self.isPrivateKey = true
+        self.isPrivate = true
         self.rawKey = key!
     }
 
@@ -55,10 +55,15 @@ public final class SecRSAKey {
 
     /// Gets the public key associated with this RSA key.
     public var publicKey: SecRSAKey {
-        guard self.isPrivateKey else {
-            return self
+        get throws {
+            guard self.isPrivate else {
+                return self
+            }
+            guard let key = SecKeyCopyPublicKey(self.rawKey) else {
+                throw SecError(errSecInternalError)
+            }
+            return try SecRSAKey(key)
         }
-        return SecRSAKey(SecKeyCopyPublicKey(self.rawKey)!)!
     }
 
     // MARK: Encryption
@@ -70,7 +75,7 @@ public final class SecRSAKey {
     ///   - algorithm: The encryption algorithm to use.
     /// - Returns: The encrypted data.
     public func encrypt<T: ContiguousBytes>(block: T, algorithm: EncryptionAlgorithm) throws -> Data {
-        let key = self.isPrivateKey ? self.publicKey.rawKey : self.rawKey
+        let key = self.isPrivate ? try self.publicKey.rawKey : self.rawKey
 
         guard SecKeyIsAlgorithmSupported(key, .encrypt, algorithm.rawValue) else {
             throw SecError(errSecInvalidAlgorithm)
@@ -81,7 +86,7 @@ public final class SecRSAKey {
             let data = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, $0.baseAddress!, $0.count, kCFAllocatorNull)!
             return SecKeyCreateEncryptedData(key, algorithm.rawValue, data, &error)
         }
-        if let error = error?.takeUnretainedValue() {
+        if let error = error?.takeRetainedValue() {
             throw error
         }
         return encrypted! as Data
@@ -95,7 +100,7 @@ public final class SecRSAKey {
     ///                `SecKeyCreateEncryptedData(_:_:_:_:)` function, that you want to decrypt.
     /// - Returns: The decrypted data.
     public func decrypt<T: ContiguousBytes>(block: T, algorithm: EncryptionAlgorithm) throws -> Data {
-        guard self.isPrivateKey else {
+        guard self.isPrivate else {
             throw SecError(errSecKeyUsageIncorrect)
         }
 
@@ -108,7 +113,7 @@ public final class SecRSAKey {
             let data = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, $0.baseAddress!, $0.count, kCFAllocatorNull)!
             return SecKeyCreateDecryptedData(self.rawKey, algorithm.rawValue, data, &error)
         }
-        if let error = error?.takeUnretainedValue() {
+        if let error = error?.takeRetainedValue() {
             throw error
         }
         return decrypted! as Data
@@ -123,7 +128,7 @@ public final class SecRSAKey {
     ///   - algorithm: The signing algorithm to use.
     /// - Returns: The digital signature.
     public func sign<T: ContiguousBytes>(_ message: T, algorithm: SignatureAlgorithm) throws -> Data {
-        guard self.isPrivateKey else {
+        guard self.isPrivate else {
             throw SecError(errSecKeyUsageIncorrect)
         }
 
@@ -136,7 +141,7 @@ public final class SecRSAKey {
             let data = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, $0.baseAddress!, $0.count, kCFAllocatorNull)!
             return SecKeyCreateSignature(self.rawKey, algorithm.rawValue, data, &error)
         }
-        if let error = error?.takeUnretainedValue() {
+        if let error = error?.takeRetainedValue() {
             throw error
         }
         return signature! as Data
@@ -152,7 +157,7 @@ public final class SecRSAKey {
     /// - Returns: This method returns `Void` only if the signature was valid. Otherwise an error is thrown.
     public func verify<M: ContiguousBytes, S: ContiguousBytes>(message: M, signature: S,
                                                                algorithm: SignatureAlgorithm) throws {
-        let key = self.isPrivateKey ? self.publicKey.rawKey : self.rawKey
+        let key = self.isPrivate ? try self.publicKey.rawKey : self.rawKey
 
         guard SecKeyIsAlgorithmSupported(key, .verify, algorithm.rawValue) else {
             throw SecError(errSecInvalidAlgorithm)
@@ -168,7 +173,7 @@ public final class SecRSAKey {
                 return SecKeyVerifySignature(key, algorithm.rawValue, messageData, signatureData, &error)
             }
         }
-        if let error = error?.takeUnretainedValue() {
+        if let error = error?.takeRetainedValue() {
             throw error
         }
         guard isValid else {
@@ -199,7 +204,7 @@ public final class SecRSAKey {
                 kSecAttrKeyType: kSecAttrKeyTypeRSA,
                 kSecAttrKeyClass: kSecAttrKeyClassPublic,
             ] as CFDictionary, &error)
-            if let error = error?.takeUnretainedValue() {
+            if let error = error?.takeRetainedValue() {
                 throw error
             }
 
@@ -207,7 +212,7 @@ public final class SecRSAKey {
             return publicKey!
         }
 
-        self.isPrivateKey = keyClass! == kSecAttrKeyClassPrivate
+        self.isPrivate = keyClass! == kSecAttrKeyClassPrivate
         self.rawKey = key
     }
 
@@ -236,7 +241,7 @@ public final class SecRSAKey {
     public func export() throws -> Data {
         var error: Unmanaged<CFError>?
         let data = SecKeyCopyExternalRepresentation(self.rawKey, &error)
-        if let error = error?.takeUnretainedValue() {
+        if let error = error?.takeRetainedValue() {
             throw error
         }
         return data! as Data

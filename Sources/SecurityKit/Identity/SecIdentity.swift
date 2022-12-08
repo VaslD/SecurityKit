@@ -30,42 +30,29 @@ public func SecIdentityCreateWithCertificate(_ certificate: SecCertificate,
 
     let hash = Insecure.SHA1.hash(data: certificateKeyData! as Data).withUnsafeBytes { Data($0) }
 
-    var returnValue: CFTypeRef?
-    var status = SecItemAdd([
-        kSecValueRef: certificate,
-        kSecReturnPersistentRef: true,
-    ] as CFDictionary, &returnValue)
-    guard status == errSecSuccess, CFGetTypeID(returnValue) == CFDataGetTypeID() else {
-        throw SecError(status)
-    }
-    let certificateReference = returnValue! as! CFData
+    let certificateReference = try SecItemAddCertificate(certificate)
+    let privateKeyReference = try {
+        do {
+            return try SecItemAddPrivateKey(privateKey)
+        } catch {
+            SecItemDelete([kSecValuePersistentRef: certificateReference] as CFDictionary)
+            throw error
+        }
+    }()
 
-    status = SecItemAdd([
-        kSecAttrApplicationLabel: hash,
-        kSecValueRef: privateKey,
-        kSecReturnPersistentRef: true,
-    ] as CFDictionary, &returnValue)
-    guard status == errSecSuccess, CFGetTypeID(returnValue) == CFDataGetTypeID() else {
-        SecItemDelete([kSecValuePersistentRef: certificateReference] as CFDictionary)
-        throw SecError(status)
-    }
-    let privateKeyReference = returnValue! as! CFData
-
-    status = SecItemCopyMatching([
-        kSecClass: kSecClassIdentity,
-        kSecAttrApplicationLabel: hash,
-        kSecReturnRef: true,
-    ] as CFDictionary, &returnValue)
-    guard status == errSecSuccess, CFGetTypeID(returnValue) == SecIdentityGetTypeID() else {
-        SecItemDelete([kSecValuePersistentRef: certificateReference] as CFDictionary)
-        SecItemDelete([kSecValuePersistentRef: privateKeyReference] as CFDictionary)
-        throw SecError(status)
-    }
+    let identity = try {
+        do {
+            return try SecItemCopyIdentity(fingerprint: hash)
+        } catch {
+            SecItemDelete([kSecValuePersistentRef: certificateReference] as CFDictionary)
+            SecItemDelete([kSecValuePersistentRef: privateKeyReference] as CFDictionary)
+            throw error
+        }
+    }()
 
     SecItemDelete([kSecValuePersistentRef: certificateReference] as CFDictionary)
     SecItemDelete([kSecValuePersistentRef: privateKeyReference] as CFDictionary)
-
-    return returnValue! as! SecIdentity
+    return identity
 }
 
 public extension SecIdentity {
