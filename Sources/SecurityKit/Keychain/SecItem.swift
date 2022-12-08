@@ -4,7 +4,7 @@ import Security
 
 @discardableResult
 public func SecItemAddCertificate(_ certificate: SecCertificate) throws -> Data {
-    var reference: CFTypeRef!
+    var reference: CFTypeRef?
     let status = SecItemAdd([
         kSecValueRef: certificate,
         kSecReturnPersistentRef: true,
@@ -12,7 +12,7 @@ public func SecItemAddCertificate(_ certificate: SecCertificate) throws -> Data 
     guard status == errSecSuccess, CFGetTypeID(reference) == CFDataGetTypeID() else {
         throw SecError(status)
     }
-    return reference as! Data
+    return reference! as! Data
 }
 
 @discardableResult
@@ -28,7 +28,7 @@ public func SecItemAddPrivateKey(_ key: SecKey) throws -> Data {
     }
 
     let hash = Insecure.SHA1.hash(data: publicKeyData! as Data).withUnsafeBytes { Data($0) }
-    var reference: CFTypeRef!
+    var reference: CFTypeRef?
     let status = SecItemAdd([
         kSecAttrApplicationLabel: hash,
         kSecValueRef: key,
@@ -37,18 +37,45 @@ public func SecItemAddPrivateKey(_ key: SecKey) throws -> Data {
     guard status == errSecSuccess, CFGetTypeID(reference) == CFDataGetTypeID() else {
         throw SecError(status)
     }
-    return reference as! Data
+    return reference! as! Data
+}
+
+@discardableResult
+public func SecItemAddIdentity(_ identity: SecIdentity) throws -> (certificateReference: Data, keyReference: Data) {
+    var certificate: SecCertificate?
+    var status = SecIdentityCopyCertificate(identity, &certificate)
+    guard status == errSecSuccess else {
+        throw SecError(status)
+    }
+
+    var key: SecKey?
+    status = SecIdentityCopyPrivateKey(identity, &key)
+    guard status == errSecSuccess else {
+        throw SecError(status)
+    }
+
+    let certificateReference = try SecItemAddCertificate(certificate!)
+    let keyReference = try {
+        do {
+            return try SecItemAddPrivateKey(key!)
+        } catch {
+            SecItemDelete([kSecValuePersistentRef: certificateReference] as CFDictionary)
+            throw error
+        }
+    }()
+
+    return (certificateReference, keyReference)
 }
 
 public func SecItemCopyIdentity(fingerprint: Data) throws -> SecIdentity {
-    var identity: CFTypeRef!
+    var identity: CFTypeRef?
     let status = SecItemCopyMatching([
         kSecClass: kSecClassIdentity,
         kSecAttrApplicationLabel: fingerprint,
         kSecReturnRef: true,
     ] as CFDictionary, &identity)
-    guard status == errSecSuccess, CFGetTypeID(identity) == SecIdentityGetTypeID() else {
+    guard status == errSecSuccess, CFGetTypeID(identity!) == SecIdentityGetTypeID() else {
         throw SecError(status)
     }
-    return identity as! SecIdentity
+    return identity! as! SecIdentity
 }
