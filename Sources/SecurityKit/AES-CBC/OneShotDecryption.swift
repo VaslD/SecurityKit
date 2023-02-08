@@ -31,8 +31,8 @@ public extension AES.CBC {
         }
     }
 
-    static func decrypt<T: ContiguousBytes, R>(_ data: T, key: SymmetricKey,
-                                               completion: (UnsafeBufferPointer<UInt8>?) throws -> R) rethrows -> R {
+    static func decrypt<R>(_ data: some ContiguousBytes, key: SymmetricKey,
+                           completion: (UnsafeBufferPointer<UInt8>?) throws -> R) rethrows -> R {
         try data.withUnsafeBytes { dataIn in
             guard dataIn.count > kCCBlockSizeAES128 else {
                 return try completion(nil)

@@ -1,6 +1,8 @@
 import Foundation
 import Security
 
+// MARK: - SecRSAKey.SignatureAlgorithm
+
 public extension SecRSAKey {
     enum SignatureAlgorithm {
         case raw

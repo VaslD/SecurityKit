@@ -30,6 +30,10 @@ public func SecIdentityCreateWithCertificate(_ certificate: SecCertificate,
 
     let hash = Insecure.SHA1.hash(data: certificateKeyData! as Data).withUnsafeBytes { Data($0) }
 
+    if let identity = try? SecItemCopyIdentity(fingerprint: hash) {
+        return identity
+    }
+
     let certificateReference = try SecItemAddCertificate(certificate)
     let privateKeyReference = try {
         do {

@@ -18,7 +18,8 @@ import Foundation
 //
 // - The origin of this software must not be misrepresented; you must not claim that you wrote the original software.
 //   If you use this software in a product, an acknowledgement in the product documentation is required.
-// - Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+// - Altered source versions must be plainly marked as such, and must not be misrepresented as being
+//   the original software.
 // - This notice may not be removed or altered from any source or binary distribution.
 
 // https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.202.pdf
@@ -121,8 +122,8 @@ public enum SHA3 {
         a[a.startIndex + 0] ^= Self.roundConstants[round]
     }
 
-    static func process<H: SHA3HashFunction, T: Collection>(
-        _ function: H.Type, block: T, hash: inout [UInt64]
+    static func process<T: Collection>(
+        _ function: (some SHA3HashFunction).Type, block: T, hash: inout [UInt64]
     ) where T.Element == UInt64, T.Index == Int {
         // Expand
         hash[0] ^= block[block.startIndex + 0].littleEndian

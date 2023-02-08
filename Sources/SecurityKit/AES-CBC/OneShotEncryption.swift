@@ -1,6 +1,7 @@
 import CommonCrypto
 import CryptoKit
 import Foundation
+import Security
 
 public extension AES.CBC {
     /// One-shot in-place AES-CBC encryption, reuses an unmanaged buffer.
@@ -25,15 +26,23 @@ public extension AES.CBC {
 
         return key.withUnsafeBytes {
             var sizeOut = 0
+
+            // CCCrypt only performs in-place operations if input and output buffers have the exact same start address.
+            // If two buffers partially overlap (e.g. output shifted to reserve additional AES blocks),
+            // CCCrypt will unknowingly overwrite the next block of plaintext with ciphertext block. (So stupid!)
+            // We do an in-place encryption here, then use memmove(_:_:_:) to shift the ciphertext;
+            // therefore, "reserving" an additional AES block of output for randomly generated IV.
+            // Previously failing test cases should now pass, :-)
             guard CCCrypt(CCOperation(kCCEncrypt), CCAlgorithm(kCCAlgorithmAES),
                           CCOptions(kCCOptionPKCS7Padding),
                           $0.baseAddress!, $0.count,
                           bufferIV.baseAddress!,
                           data.baseAddress!, size,
-                          data.baseAddress! + kCCBlockSizeAES128, data.count - kCCBlockSizeAES128,
+                          data.baseAddress!, data.count,
                           &sizeOut) == kCCSuccess else {
                 return 0
             }
+            memmove(data.baseAddress! + kCCBlockSizeAES128, data.baseAddress!, sizeOut)
 
             (0..<kCCBlockSizeAES128).forEach {
                 data[$0] = bufferIV[$0]
@@ -44,8 +53,8 @@ public extension AES.CBC {
         }
     }
 
-    static func encrypt<T: ContiguousBytes, R>(_ data: T, key: SymmetricKey,
-                                               completion: (_ buffer: UnsafeBufferPointer<UInt8>?) throws -> R
+    static func encrypt<R>(_ data: some ContiguousBytes, key: SymmetricKey,
+                           completion: (_ buffer: UnsafeBufferPointer<UInt8>?) throws -> R
     ) rethrows -> R {
         let bufferIV = UnsafeMutableBufferPointer<UInt8>.allocate(capacity: kCCKeySizeAES128)
         defer { bufferIV.deallocate() }

@@ -34,122 +34,122 @@ final class SHA3Tests: XCTestCase {
     // https://emn178.github.io/online-tools/index.html
 
     func testSHA224() {
-        XCTAssertEqual(SHA3.SHA224.hash(data: Data()).asHexString(uppercased: false),
+        XCTAssertEqual(SHA3.SHA224.hash(data: Data()).asHexString(uppercase: false),
                        "6b4e03423667dbb73b6e15454f0eb1abd4597f9a1b078e3f5b5a6bc7")
 
-        XCTAssertEqual(SHA3.SHA224.hash(data: Self.text.joined().data(using: .utf8)!).asHexString(uppercased: false),
+        XCTAssertEqual(SHA3.SHA224.hash(data: Self.text.joined().data(using: .utf8)!).asHexString(uppercase: false),
                        "61c8db31c49a98ef5f166178a2bbfe674403848b9099000288cfe75a")
 
         var hasher = SHA3.SHA224()
         Self.text.forEach {
             hasher.update(data: $0.data(using: .utf8)!)
         }
-        XCTAssertEqual(hasher.finalize().asHexString(uppercased: false),
+        XCTAssertEqual(hasher.finalize().asHexString(uppercase: false),
                        "61c8db31c49a98ef5f166178a2bbfe674403848b9099000288cfe75a")
     }
 
     func testSHA256() {
-        XCTAssertEqual(SHA3.SHA256.hash(data: Data()).asHexString(uppercased: false),
+        XCTAssertEqual(SHA3.SHA256.hash(data: Data()).asHexString(uppercase: false),
                        "a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a")
 
-        XCTAssertEqual(SHA3.SHA256.hash(data: Self.text.joined().data(using: .utf8)!).asHexString(uppercased: false),
+        XCTAssertEqual(SHA3.SHA256.hash(data: Self.text.joined().data(using: .utf8)!).asHexString(uppercase: false),
                        "c41a72b1a512d889cc8a2318931dd677a7ffb741215bd00c16c7d2e0c5637681")
 
         var hasher = SHA3.SHA256()
         Self.text.forEach {
             hasher.update(data: $0.data(using: .utf8)!)
         }
-        XCTAssertEqual(hasher.finalize().asHexString(uppercased: false),
+        XCTAssertEqual(hasher.finalize().asHexString(uppercase: false),
                        "c41a72b1a512d889cc8a2318931dd677a7ffb741215bd00c16c7d2e0c5637681")
     }
 
     func testSHA384() {
-        XCTAssertEqual(SHA3.SHA384.hash(data: Data()).asHexString(uppercased: false),
+        XCTAssertEqual(SHA3.SHA384.hash(data: Data()).asHexString(uppercase: false),
                        "0c63a75b845e4f7d01107d852e4c2485c51a50aaaa94fc61995e71bbee983a2ac3713831264adb47fb6bd1e058d5f004")
 
-        XCTAssertEqual(SHA3.SHA384.hash(data: Self.text.joined().data(using: .utf8)!).asHexString(uppercased: false),
+        XCTAssertEqual(SHA3.SHA384.hash(data: Self.text.joined().data(using: .utf8)!).asHexString(uppercase: false),
                        "c11c6f808343479b6bf0b096e47e770771bd33505a969a2fffb5baf3e05aa4f16ff5d418c656dc66e13ee7640576f432")
 
         var hasher = SHA3.SHA384()
         Self.text.forEach {
             hasher.update(data: $0.data(using: .utf8)!)
         }
-        XCTAssertEqual(hasher.finalize().asHexString(uppercased: false),
+        XCTAssertEqual(hasher.finalize().asHexString(uppercase: false),
                        "c11c6f808343479b6bf0b096e47e770771bd33505a969a2fffb5baf3e05aa4f16ff5d418c656dc66e13ee7640576f432")
     }
 
     func testSHA512() {
-        XCTAssertEqual(SHA3.SHA512.hash(data: Data()).asHexString(uppercased: false),
+        XCTAssertEqual(SHA3.SHA512.hash(data: Data()).asHexString(uppercase: false),
                        "a69f73cca23a9ac5c8b567dc185a756e97c982164fe25859e0d1dcc1475c80a615b2123af1f5f94c11e3e9402c3ac558f500199d95b6d3e301758586281dcd26")
 
-        XCTAssertEqual(SHA3.SHA512.hash(data: Self.text.joined().data(using: .utf8)!).asHexString(uppercased: false),
+        XCTAssertEqual(SHA3.SHA512.hash(data: Self.text.joined().data(using: .utf8)!).asHexString(uppercase: false),
                        "c259192d81b6e853fc6f982e77f65dd7f2e0486989c291c09de5f16bd211aeb83f96d4006428fefeb4eaa4482aac8374a43a6e9ff0d14a238967f5d610e929af")
 
         var hasher = SHA3.SHA512()
         Self.text.forEach {
             hasher.update(data: $0.data(using: .utf8)!)
         }
-        XCTAssertEqual(hasher.finalize().asHexString(uppercased: false),
+        XCTAssertEqual(hasher.finalize().asHexString(uppercase: false),
                        "c259192d81b6e853fc6f982e77f65dd7f2e0486989c291c09de5f16bd211aeb83f96d4006428fefeb4eaa4482aac8374a43a6e9ff0d14a238967f5d610e929af")
     }
 
     func testKeccak224() {
-        XCTAssertEqual(SHA3.Keccak224.hash(data: Data()).asHexString(uppercased: false),
+        XCTAssertEqual(SHA3.Keccak224.hash(data: Data()).asHexString(uppercase: false),
                        "f71837502ba8e10837bdd8d365adb85591895602fc552b48b7390abd")
 
-        XCTAssertEqual(SHA3.Keccak224.hash(data: Self.text.joined().data(using: .utf8)!).asHexString(uppercased: false),
+        XCTAssertEqual(SHA3.Keccak224.hash(data: Self.text.joined().data(using: .utf8)!).asHexString(uppercase: false),
                        "40a9c0b4b63f4c68c1f9af71900b4a8e17610592db119d78bd5c01de")
 
         var hasher = SHA3.Keccak224()
         Self.text.forEach {
             hasher.update(data: $0.data(using: .utf8)!)
         }
-        XCTAssertEqual(hasher.finalize().asHexString(uppercased: false),
+        XCTAssertEqual(hasher.finalize().asHexString(uppercase: false),
                        "40a9c0b4b63f4c68c1f9af71900b4a8e17610592db119d78bd5c01de")
     }
 
     func testKeccak256() {
-        XCTAssertEqual(SHA3.Keccak256.hash(data: Data()).asHexString(uppercased: false),
+        XCTAssertEqual(SHA3.Keccak256.hash(data: Data()).asHexString(uppercase: false),
                        "c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470")
 
-        XCTAssertEqual(SHA3.Keccak256.hash(data: Self.text.joined().data(using: .utf8)!).asHexString(uppercased: false),
+        XCTAssertEqual(SHA3.Keccak256.hash(data: Self.text.joined().data(using: .utf8)!).asHexString(uppercase: false),
                        "0a662cb1b816d0ed421ae0547dc9cf8fd3a436eb13e9416d4cab2b0a1bc4b497")
 
         var hasher = SHA3.Keccak256()
         Self.text.forEach {
             hasher.update(data: $0.data(using: .utf8)!)
         }
-        XCTAssertEqual(hasher.finalize().asHexString(uppercased: false),
+        XCTAssertEqual(hasher.finalize().asHexString(uppercase: false),
                        "0a662cb1b816d0ed421ae0547dc9cf8fd3a436eb13e9416d4cab2b0a1bc4b497")
     }
 
     func testKeccak384() {
-        XCTAssertEqual(SHA3.Keccak384.hash(data: Data()).asHexString(uppercased: false),
+        XCTAssertEqual(SHA3.Keccak384.hash(data: Data()).asHexString(uppercase: false),
                        "2c23146a63a29acf99e73b88f8c24eaa7dc60aa771780ccc006afbfa8fe2479b2dd2b21362337441ac12b515911957ff")
 
-        XCTAssertEqual(SHA3.Keccak384.hash(data: Self.text.joined().data(using: .utf8)!).asHexString(uppercased: false),
+        XCTAssertEqual(SHA3.Keccak384.hash(data: Self.text.joined().data(using: .utf8)!).asHexString(uppercase: false),
                        "e557476246eff018508893c0ee578d01bfefac9c3610c7493eafc5a718ebb0c0fe235e60ed01b37ec4cbfe37b66273fb")
 
         var hasher = SHA3.Keccak384()
         Self.text.forEach {
             hasher.update(data: $0.data(using: .utf8)!)
         }
-        XCTAssertEqual(hasher.finalize().asHexString(uppercased: false),
+        XCTAssertEqual(hasher.finalize().asHexString(uppercase: false),
                        "e557476246eff018508893c0ee578d01bfefac9c3610c7493eafc5a718ebb0c0fe235e60ed01b37ec4cbfe37b66273fb")
     }
 
     func testKeccak512() {
-        XCTAssertEqual(SHA3.Keccak512.hash(data: Data()).asHexString(uppercased: false),
+        XCTAssertEqual(SHA3.Keccak512.hash(data: Data()).asHexString(uppercase: false),
                        "0eab42de4c3ceb9235fc91acffe746b29c29a8c366b7c60e4e67c466f36a4304c00fa9caf9d87976ba469bcbe06713b435f091ef2769fb160cdab33d3670680e")
 
-        XCTAssertEqual(SHA3.Keccak512.hash(data: Self.text.joined().data(using: .utf8)!).asHexString(uppercased: false),
+        XCTAssertEqual(SHA3.Keccak512.hash(data: Self.text.joined().data(using: .utf8)!).asHexString(uppercase: false),
                        "212794e257289625c48efae0ce5074aadfb3f66354c24b9dbd28e329af22ed0ecbb658631ce6727683a003a7c653a3b2b76142256c4b7a2c50810aaf941d9621")
 
         var hasher = SHA3.Keccak512()
         Self.text.forEach {
             hasher.update(data: $0.data(using: .utf8)!)
         }
-        XCTAssertEqual(hasher.finalize().asHexString(uppercased: false),
+        XCTAssertEqual(hasher.finalize().asHexString(uppercase: false),
                        "212794e257289625c48efae0ce5074aadfb3f66354c24b9dbd28e329af22ed0ecbb658631ce6727683a003a7c653a3b2b76142256c4b7a2c50810aaf941d9621")
     }
 }

@@ -71,7 +71,7 @@ public extension SecTrust {
         try await withUnsafeThrowingContinuation { (continuation: UnsafeContinuation<Void, Error>) in
             queue.async {
                 let status = SecTrustEvaluateAsyncWithError(self, queue) { _, isValid, error in
-                    if let error = error {
+                    if let error {
                         continuation.resume(throwing: error)
                         return
                     }

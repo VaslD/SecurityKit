@@ -160,9 +160,9 @@ public enum OAEP {
     //       +--+----------+----------------------------+
     // EM =  |00|maskedSeed|          maskedDB          |
     //       +--+----------+----------------------------+
-    public static func EMEOAEP<T: DataProtocol, H: HashFunction, MH: HashFunction>(
-        MGFHash: MH.Type, Hash: H.Type,
-        k: Int, M: T,
+    public static func EMEOAEP<H: HashFunction>(
+        MGFHash: (some HashFunction).Type, Hash: H.Type,
+        k: Int, M: some DataProtocol,
         L: String = String()
     ) throws -> Data {
         let hLen = H.Digest.byteCount
@@ -200,15 +200,17 @@ public enum OAEP {
         return Data([0x00] + maskedSeed + maskedDB)
     }
 
-    public static func pad<T: DataProtocol, H: HashFunction, MH: HashFunction>(
-        _ message: T, with hash: H.Type, andMGF1Padding hashMGF: MH.Type, for key: SecKey
+    public static func pad(
+        _ message: some DataProtocol, with hash: (some HashFunction).Type,
+        andMGF1Padding hashMGF: (some HashFunction).Type, for key: SecKey
     ) throws -> Data {
         let keySize = SecKeyGetBlockSize(key)
         return try Self.EMEOAEP(MGFHash: hashMGF, Hash: hash, k: keySize, M: message)
     }
 
-    public static func pad<T: DataProtocol, H: HashFunction, MH: HashFunction>(
-        _ message: T, with hash: H.Type, andMGF1Padding hashMGF: MH.Type, toBlockSize bytes: Int
+    public static func pad(
+        _ message: some DataProtocol, with hash: (some HashFunction).Type,
+        andMGF1Padding hashMGF: (some HashFunction).Type, toBlockSize bytes: Int
     ) throws -> Data {
         try Self.EMEOAEP(MGFHash: hashMGF, Hash: hash, k: bytes, M: message)
     }

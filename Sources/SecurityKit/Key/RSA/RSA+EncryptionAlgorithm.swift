@@ -1,6 +1,8 @@
 import Foundation
 import Security
 
+// MARK: - SecRSAKey.EncryptionAlgorithm
+
 public extension SecRSAKey {
     enum EncryptionAlgorithm {
         case ECB

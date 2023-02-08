@@ -5,7 +5,7 @@ import Security
 ///
 /// - Parameter data: A DER (Distinguished Encoding Rules) representation of an X.509 certificate.
 /// - Returns: The newly created certificate instance.
-public func SecCertificateCreateWithData<T: ContiguousBytes>(_ data: T) throws -> SecCertificate {
+public func SecCertificateCreateWithData(_ data: some ContiguousBytes) throws -> SecCertificate {
     guard let certificate = data.withUnsafeBytes({
         let data = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, $0.baseAddress!, $0.count, kCFAllocatorNull)!
         return SecCertificateCreateWithData(kCFAllocatorDefault, data)
@@ -15,7 +15,7 @@ public func SecCertificateCreateWithData<T: ContiguousBytes>(_ data: T) throws -
     return certificate
 }
 
-public func SecCertificateCreateFromPEMDocument<T: StringProtocol>(_ document: T) throws -> SecCertificate {
+public func SecCertificateCreateFromPEMDocument(_ document: some StringProtocol) throws -> SecCertificate {
     let lines = document.split(whereSeparator: \.isNewline)
     guard lines.first == "-----BEGIN CERTIFICATE-----", lines.last == "-----END CERTIFICATE-----" else {
         throw SecError(errSecParam)
@@ -62,7 +62,7 @@ public extension SecCertificate {
             if let error = error?.takeRetainedValue() {
                 throw error
             }
-            return (data! as Data).asHexString()
+            return (data! as Data).asHexString(uppercase: false)
         }
     }
 

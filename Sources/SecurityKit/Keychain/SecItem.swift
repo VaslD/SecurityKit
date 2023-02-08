@@ -79,3 +79,46 @@ public func SecItemCopyIdentity(fingerprint: Data) throws -> SecIdentity {
     }
     return identity! as! SecIdentity
 }
+
+public func SecItemCopyIdentity(certificate: SecCertificate) throws -> SecIdentity {
+    guard let publicKey = SecCertificateCopyKey(certificate) else {
+        throw SecError(errSecInternalError)
+    }
+
+    var error: Unmanaged<CFError>?
+    let publicKeyData = SecKeyCopyExternalRepresentation(publicKey, &error)
+    if let error = error?.takeRetainedValue() {
+        throw error
+    }
+
+    let hash = Insecure.SHA1.hash(data: publicKeyData! as Data).withUnsafeBytes { Data($0) }
+    return try SecItemCopyIdentity(fingerprint: hash)
+}
+
+public func SecItemDelete(reference: Data) throws {
+    let status = SecItemDelete([kSecValuePersistentRef: reference] as CFDictionary)
+    guard status == errSecSuccess else {
+        throw SecError(status)
+    }
+}
+
+public func SecItemDeleteCertificate(_ certificate: SecCertificate) throws {
+    let status = SecItemDelete([kSecValueRef: certificate] as CFDictionary)
+    guard status == errSecSuccess else {
+        throw SecError(status)
+    }
+}
+
+public func SecItemDeleteKey(_ key: SecKey) throws {
+    let status = SecItemDelete([kSecValueRef: key] as CFDictionary)
+    guard status == errSecSuccess else {
+        throw SecError(status)
+    }
+}
+
+public func SecItemDeleteIdentity(_ identity: SecIdentity) throws {
+    let status = SecItemDelete([kSecValueRef: identity] as CFDictionary)
+    guard status == errSecSuccess else {
+        throw SecError(status)
+    }
+}

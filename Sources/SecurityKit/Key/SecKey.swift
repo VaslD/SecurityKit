@@ -7,7 +7,7 @@ import Security
 ///   - data: Data representing the key. The format of the data depends on the type of key being created.
 ///   - properties: A dictionary containing attributes describing the key to be imported.
 /// - Returns: The restored key.
-public func SecKeyCreateWithData<T: ContiguousBytes>(_ data: T, properties: [CFString: Any]) throws -> SecKey {
+public func SecKeyCreateWithData(_ data: some ContiguousBytes, properties: [CFString: Any]) throws -> SecKey {
     var error: Unmanaged<CFError>?
     let key = data.withUnsafeBytes {
         let data = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, $0.baseAddress!, $0.count, kCFAllocatorNull)!
@@ -56,7 +56,7 @@ public extension SecKey {
     ///   - block: The data to be encrypted.
     ///   - algorithm: The encryption algorithm to use.
     /// - Returns: The encrypted data.
-    func encrypt<T: ContiguousBytes>(block: T, algorithm: SecKeyAlgorithm) throws -> Data {
+    func encrypt(block: some ContiguousBytes, algorithm: SecKeyAlgorithm) throws -> Data {
         guard SecKeyIsAlgorithmSupported(self, .encrypt, algorithm) else {
             throw SecError(errSecInvalidAlgorithm)
         }
@@ -79,7 +79,7 @@ public extension SecKey {
     ///   - algorithm: The data, produced with the corresponding public key and a call to the
     ///                `SecKeyCreateEncryptedData(_:_:_:_:)` function, that you want to decrypt.
     /// - Returns: The decrypted data.
-    func decrypt<T: ContiguousBytes>(block: T, algorithm: SecKeyAlgorithm) throws -> Data {
+    func decrypt(block: some ContiguousBytes, algorithm: SecKeyAlgorithm) throws -> Data {
         guard SecKeyIsAlgorithmSupported(self, .decrypt, algorithm) else {
             throw SecError(errSecInvalidAlgorithm)
         }
@@ -103,7 +103,7 @@ public extension SecKey {
     ///   - message: The data whose signature you want.
     ///   - algorithm: The signing algorithm to use.
     /// - Returns: The digital signature.
-    func sign<T: ContiguousBytes>(_ message: T, algorithm: SecKeyAlgorithm) throws -> Data {
+    func sign(_ message: some ContiguousBytes, algorithm: SecKeyAlgorithm) throws -> Data {
         guard SecKeyIsAlgorithmSupported(self, .sign, algorithm) else {
             throw SecError(errSecInvalidAlgorithm)
         }
@@ -126,8 +126,8 @@ public extension SecKey {
     ///   - signature: The signature that was created with a call to the `SecKeyCreateSignature(_:_:_:_:)` function.
     ///   - algorithm: The algorithm that was used to create the signature.
     /// - Returns: This method returns `Void` only if the signature was valid. Otherwise an error is thrown.
-    func verify<M: ContiguousBytes, S: ContiguousBytes>(message: M, signature: S,
-                                                        algorithm: SecKeyAlgorithm) throws {
+    func verify(message: some ContiguousBytes, signature: some ContiguousBytes,
+                algorithm: SecKeyAlgorithm) throws {
         guard SecKeyIsAlgorithmSupported(self, .verify, algorithm) else {
             throw SecError(errSecInvalidAlgorithm)
         }

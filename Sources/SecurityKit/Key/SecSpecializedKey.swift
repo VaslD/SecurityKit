@@ -7,7 +7,7 @@ protocol SecSpecializedKey: AnyObject {
     var publicKey: Self { get throws }
 
     init(_ key: SecKey) throws
-    init<T: ContiguousBytes>(_ data: T) throws
+    init(_ data: some ContiguousBytes) throws
 
     func export() throws -> Data
 }

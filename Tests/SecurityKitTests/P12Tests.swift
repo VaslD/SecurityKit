@@ -54,13 +54,13 @@ final class P12Tests: XCTestCase {
     func testP12Import() throws {
         XCTAssertNoThrow(try P12(Self.revoked, password: "YXRJS87ACU"))
     }
+    
+    // How do you verify revoked certificates using SecPolicy?
 
-    /*
-    func testTrustEvaluation() async throws {
-        let bundle = try P12(Self.revoked, password: "YXRJS87ACU")
-        for trust in bundle.trusts {
-            try await trust.evaluate()
-        }
-    }
-    */
+    // func testTrustEvaluation() async throws {
+    //     let bundle = try P12(Self.revoked, password: "YXRJS87ACU")
+    //     for trust in bundle.trusts {
+    //         try await trust.evaluate()
+    //     }
+    // }
 }

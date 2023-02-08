@@ -24,7 +24,7 @@ public final class P12 {
     /// - Parameters:
     ///   - data: The PKCS #12 data you wish to decode.
     ///   - password: A passphrase to be used when importing from PKCS #12 format.
-    public init<T: ContiguousBytes>(_ data: T, password: String) throws {
+    public init(_ data: some ContiguousBytes, password: String) throws {
         let items = try data.withUnsafeBytes {
             let data = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, $0.baseAddress!, $0.count, kCFAllocatorNull)!
 

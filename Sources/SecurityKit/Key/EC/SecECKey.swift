@@ -40,7 +40,7 @@ public final class SecECKey: SecSpecializedKey {
 
     // MARK: Export
 
-    public init<T: ContiguousBytes>(_ data: T) throws {
+    public init(_ data: some ContiguousBytes) throws {
         var keyClass: CFString?
         let key: SecKey = try data.withUnsafeBytes {
             let data = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, $0.baseAddress!, $0.count, kCFAllocatorNull)!

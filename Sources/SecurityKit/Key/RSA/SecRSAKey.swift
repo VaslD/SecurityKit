@@ -74,7 +74,7 @@ public final class SecRSAKey: SecSpecializedKey {
     ///   - block: The data to be encrypted.
     ///   - algorithm: The encryption algorithm to use.
     /// - Returns: The encrypted data.
-    public func encrypt<T: ContiguousBytes>(block: T, algorithm: EncryptionAlgorithm) throws -> Data {
+    public func encrypt(block: some ContiguousBytes, algorithm: EncryptionAlgorithm) throws -> Data {
         let key = self.isPrivate ? try self.publicKey.rawKey : self.rawKey
 
         guard SecKeyIsAlgorithmSupported(key, .encrypt, algorithm.rawValue) else {
@@ -99,7 +99,7 @@ public final class SecRSAKey: SecSpecializedKey {
     ///   - algorithm: The data, produced with the corresponding public key and a call to the
     ///                `SecKeyCreateEncryptedData(_:_:_:_:)` function, that you want to decrypt.
     /// - Returns: The decrypted data.
-    public func decrypt<T: ContiguousBytes>(block: T, algorithm: EncryptionAlgorithm) throws -> Data {
+    public func decrypt(block: some ContiguousBytes, algorithm: EncryptionAlgorithm) throws -> Data {
         guard self.isPrivate else {
             throw SecError(errSecKeyUsageIncorrect)
         }
@@ -127,7 +127,7 @@ public final class SecRSAKey: SecSpecializedKey {
     ///   - message: The data whose signature you want.
     ///   - algorithm: The signing algorithm to use.
     /// - Returns: The digital signature.
-    public func sign<T: ContiguousBytes>(_ message: T, algorithm: SignatureAlgorithm) throws -> Data {
+    public func sign(_ message: some ContiguousBytes, algorithm: SignatureAlgorithm) throws -> Data {
         guard self.isPrivate else {
             throw SecError(errSecKeyUsageIncorrect)
         }
@@ -155,8 +155,8 @@ public final class SecRSAKey: SecSpecializedKey {
     ///   - signature: The signature that was created with a call to the `SecKeyCreateSignature(_:_:_:_:)` function.
     ///   - algorithm: The algorithm that was used to create the signature.
     /// - Returns: This method returns `Void` only if the signature was valid. Otherwise an error is thrown.
-    public func verify<M: ContiguousBytes, S: ContiguousBytes>(message: M, signature: S,
-                                                               algorithm: SignatureAlgorithm) throws {
+    public func verify(message: some ContiguousBytes, signature: some ContiguousBytes,
+                       algorithm: SignatureAlgorithm) throws {
         let key = self.isPrivate ? try self.publicKey.rawKey : self.rawKey
 
         guard SecKeyIsAlgorithmSupported(key, .verify, algorithm.rawValue) else {
@@ -186,7 +186,7 @@ public final class SecRSAKey: SecSpecializedKey {
     /// Restores an RSA key from the PKCS#1 representation of that key.
     ///
     /// - Parameter data: Data representing the key.
-    public init<T: ContiguousBytes>(_ data: T) throws {
+    public init(_ data: some ContiguousBytes) throws {
         var keyClass: CFString?
         let key: SecKey = try data.withUnsafeBytes {
             let data = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, $0.baseAddress!, $0.count, kCFAllocatorNull)!

@@ -1,8 +1,7 @@
 import Foundation
 import Security
 
-/// ``SecError`` wraps `OSStatus` return codes from Security framework as if they were thrown as errors from
-/// `kCFErrorDomainOSStatus` domain.
+/// ``SecError`` wraps return codes from Security framework to interoperate with Swift error handling.
 public struct SecError: RawRepresentable {
     public let rawValue: OSStatus
 
@@ -14,6 +13,20 @@ public struct SecError: RawRepresentable {
         self.rawValue = rawValue
     }
 }
+
+// At this moment, I’m not sure if "errSec"s are really error codes from kCFErrorDomainOSStatus.
+// If anyone can confirm, we can enable CustomNSError conformance below.
+
+// extension SecError: CustomNSError {
+//     public static var errorDomain: String {
+//         kCFErrorDomainOSStatus as String
+//     }
+//
+//     public var errorCode: Int {
+//         Int(self.rawValue)
+//     }
+// }
+
 
 // MARK: LocalizedError
 

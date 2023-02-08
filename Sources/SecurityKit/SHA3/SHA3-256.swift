@@ -1,6 +1,8 @@
 import CryptoKit
 import Foundation
 
+// MARK: - SHA3.SHA256
+
 public extension SHA3 {
     struct SHA256 {
         public static let blockByteCount = 136
@@ -67,13 +69,15 @@ public extension SHA3 {
     }
 }
 
+// MARK: - SHA3.SHA256.SHA256Digest
+
 public extension SHA3.SHA256 {
     struct SHA256Digest: Sequence, Hashable, ContiguousBytes, CustomStringConvertible {
         public static let byteCount = 32
 
         private var digest: Data
 
-        init<T: DataProtocol>(_ digest: T) {
+        init(_ digest: some DataProtocol) {
             let digest = (digest as? Data) ?? Data(digest)
             self.digest = digest[..<Self.byteCount]
         }
